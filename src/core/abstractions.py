@@ -1,3 +1,10 @@
+#Copyright (C) 2025 MohammadjavadMorady
+
+#This program is free software: you can redistribute it and/or modify
+#it under the terms of the GNU General Public License as published by
+#the Free Software Foundation, either version 3 of the License, or
+#(at your option) any later version.
+
 """
 This module defines abstract base classes for web scraping components:
 LinkScraper, SpecsScraper, and Storage. These ABCs outline the
