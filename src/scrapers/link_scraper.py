@@ -6,7 +6,21 @@ from core.config_loader import ConfigLoader
 from loguru import logger
 
 class DigikalaLinkScraper(LinkScraper):
+    """
+    Scrapes product links from the Digikala website for a specific category.
+
+    This class implements the LinkScraper interface to extract product URLs
+    from Digikala's paginated category pages. It handles HTTP requests,
+    JSON parsing, and error handling.
+    """
     def __init__(self, config_loader: ConfigLoader):
+        """
+        Initializes the DigikalaLinkScraper with configurations from ConfigLoader.
+
+        Args:
+            config_loader (ConfigLoader): An instance of ConfigLoader that provides
+                the necessary configurations (scraper settings, headers).
+        """
         self.config = config_loader.get_scraper_config()
         self.headers = config_loader.get_headers()
         self.category = self.config["category"]
@@ -18,6 +32,16 @@ class DigikalaLinkScraper(LinkScraper):
         self.output_file = self.config["link_output_file"].format(category=self.category)
 
     def scrape_links(self) -> Set[str]:
+        """
+        Scrapes product links from Digikala category pages.
+
+        This method iterates through paginated category pages, extracts product
+        URLs from the JSON response, and saves them to a file.  It handles
+        HTTP requests, JSON parsing, error handling, and logging.
+
+        Returns:
+            Set[str]: A set of unique product URLs.
+        """
         product_urls = set()
         page = self.start_page
 
