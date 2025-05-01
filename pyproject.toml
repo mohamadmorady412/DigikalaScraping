@@ -1,0 +1,22 @@
+[tool.black]
+line-length = 88
+target-version = ['py310']
+include = '\.pyi?|\.ipynb$'
+
+[tool.isort]
+profile = 'black'
+
+[tool.pytest.ini_options]
+markers = [
+    "slow: mark test as slow to run",
+    "integration: mark test as integration test",
+    "unit: mark test as unit test",
+]
+testpaths = [
+    "tests",
+    "integration_tests",
+]
+python_files = ["test_*.py", "test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "--cov=. --cov-report term-missing"
