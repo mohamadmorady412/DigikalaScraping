@@ -30,7 +30,7 @@ To run this scraper, follow these steps:
         ```
     * Install other dependencies:
         ```bash
-        pip install -r requirement\production.txt
+        pip install -r requirements\production.txt
         ```
         (if you have a `requirements.txt` file)
 
