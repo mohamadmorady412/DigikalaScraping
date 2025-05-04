@@ -30,7 +30,7 @@ To run this scraper, follow these steps:
         ```
     * Install other dependencies:
         ```bash
-        pip install -r requirements.txt
+        pip install -r requirement\production.txt
         ```
         (if you have a `requirements.txt` file)
 
@@ -95,8 +95,3 @@ To run this scraper, follow these steps:
 ## 🤝 Contributing
 
 Contributions to this project are welcome. Feel free to fork the repository and submit your changes via Pull Request.
-
-## 📜 License
-
-[LICENSE]C:\Users\moham\Documents\GitHub\DigikalaScraping\LICENSE
-
