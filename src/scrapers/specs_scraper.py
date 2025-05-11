@@ -5,7 +5,6 @@
 #the Free Software Foundation, either version 3 of the License, or
 #(at your option) any later version.
 
-
 from playwright.async_api import async_playwright
 from bs4 import BeautifulSoup
 from typing import List, Dict
@@ -16,43 +15,17 @@ from loguru import logger
 class DigikalaSpecsScraper(SpecsScraper):
     """
     Scrapes product specifications from individual Digikala product pages.
-
-    This class utilizes Playwright to render dynamic content and BeautifulSoup
-    to parse the HTML, extracting product titles and specifications based on
-    configurations loaded via ConfigLoader.
     """
-    def __init__(self, config_loader: ConfigLoader):
-        """
-        Initializes the DigikalaSpecsScraper with configurations.
 
-        Args:
-            config_loader (ConfigLoader): An instance of ConfigLoader providing
-                scraper settings, including file paths, timeouts, and CSS selectors.
-        """
+    def __init__(self, config_loader: ConfigLoader):
         self.config = config_loader.get_scraper_config()
         self.category = self.config["category"]
         self.input_file = self.config["specs_input_file"].format(category=self.category)
         self.page_timeout = self.config["page_timeout"]
         self.wait_state = self.config["wait_state"]
-        self.spec_div_id = self.config["spec_div_id"]
-        self.spec_keys = self.config["spec_keys"]
+        self.spec_fields = self.config["spec_fields"]
 
     async def scrape_specs(self, urls: List[str]) -> List[Dict]:
-        """
-        Asynchronously scrapes product specifications from a list of Digikala URLs.
-
-        It launches a headless Chromium browser, navigates to each URL, waits for
-        the page to load, extracts product information using `_extract_product_info`,
-        and returns a list of dictionaries containing the scraped data.
-
-        Args:
-            urls (List[str]): A list of Digikala product URLs to scrape.
-
-        Returns:
-            List[Dict]: A list of dictionaries, where each dictionary contains
-                       the 'نام محصول' (product name), 'لینک' (URL), and
-                       other specified specifications for a product.
-        """
         all_data = []
 
         async with async_playwright() as p:
@@ -66,7 +39,7 @@ class DigikalaSpecsScraper(SpecsScraper):
                     await page.goto(url, timeout=self.page_timeout)
                     await page.wait_for_load_state(self.wait_state)
                     html = await page.content()
-                    info = self._extract_product_info(html, url) # Extract product info from the page content
+                    info = self._extract_product_info(html, url)
                     all_data.append(info)
                     await page.close()
                 except Exception as e:
@@ -78,47 +51,36 @@ class DigikalaSpecsScraper(SpecsScraper):
         return all_data
 
     def _extract_product_info(self, html: str, url: str) -> Dict:
-        """
-        Extracts product name and specifications from the HTML content of a page.
-
-        It uses BeautifulSoup to parse the HTML and locate the product title
-        and specification details based on configured IDs and keys.
-
-        Args:
-            html (str): The HTML content of the product page.
-            url (str): The URL of the product page.
-
-        Returns:
-            Dict: A dictionary containing the 'نام محصول', 'لینک', and extracted
-                  specifications.
-        """
         soup = BeautifulSoup(html, "html.parser")
 
         # Extract product title
         title_tag = soup.find("title")
         name = title_tag.get_text(strip=True) if title_tag else "N/A"
 
-        # Extract specifications
-        specs = {}
-        spec_div = soup.find("div", id=self.spec_div_id)
-        if spec_div:
-            rows = spec_div.find_all("div", recursive=True)
-            for row in rows:
-                ps = row.find_all("p")
-                if len(ps) >= 2:
-                    key = ps[0].get_text(strip=True)
-                    values = [p.get_text(strip=True) for p in ps[1:]]
-                    value = " - ".join(values)
-                    if key and value:
-                        specs[key] = value
-
-        # Prepare the result dictionary
         result = {
             "نام محصول": name,
             "لینک": url
         }
-        # Add specific specifications based on configured keys
-        for key in self.spec_keys:
-            result[key] = specs.get(key, "N/A")
+
+        # Extract fields based on config-defined selectors
+        for label, config in self.spec_fields.items():
+            selector = config.get("selector")
+            if not selector:
+                result[label] = "N/A"
+                continue
+
+            elements = soup.select(selector)
+            found = False
+            for el in elements:
+                ps = el.find_all("p")
+                if len(ps) >= 2:
+                    key_text = ps[0].get_text(strip=True)
+                    value_text = " - ".join(p.get_text(strip=True) for p in ps[1:])
+                    if key_text == label:
+                        result[label] = value_text
+                        found = True
+                        break
+            if not found:
+                result[label] = "N/A"
 
         return result

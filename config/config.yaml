@@ -2,24 +2,31 @@ headers:
   User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36
   referer: https://www.digikala.com/
   Accept: application/json
+
 scraper:
   category: perfume
   base_url_template: https://api.digikala.com/v1/categories/{category}/search/
   domain: https://www.digikala.com
   start_page: 1
-  max_pages: 2
+  max_pages: 1
   sleep_duration: 1
   link_output_file: digikala_{category}_links.txt
   specs_input_file: digikala_{category}_links.txt
   page_timeout: 30000
   wait_state: networkidle
-  spec_div_id: specification
   csv_fieldnames:
     - نام محصول
     - لینک
-  spec_keys:
     - ماندگاری
     - حجم
+
+  spec_fields:
+    ماندگاری:
+      selector: div#specification div.row
+    حجم:
+      selector: div#specification div.row
+
   storage_type: postgres
+
 database:
   table_name: products
